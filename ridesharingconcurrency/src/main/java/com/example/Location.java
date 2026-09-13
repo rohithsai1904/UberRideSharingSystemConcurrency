@@ -16,4 +16,10 @@ public class Location {
     public int getY(){
         return this.Y;
     }
+
+    public int getEuclideanDistance(Location desLocation){
+        int deltaX = desLocation.getX() - this.getX();
+        int deltaY = desLocation.getY() - this.getY();
+        return (int) Math.round(Math.sqrt(deltaX * deltaX + deltaY * deltaY));
+    }
 }
