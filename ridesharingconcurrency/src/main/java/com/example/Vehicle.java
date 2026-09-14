@@ -8,4 +8,8 @@ public class Vehicle {
         this.vt=vt;
         this.licenseid=licenseid;
     }
+
+    public VehicleType getVehicleType(){
+        return this.vt;
+    }
 }
