@@ -40,11 +40,7 @@ public class Rider {
         if(this.requestedRide==null){
             throw new RuntimeException("No Ride Requested Exists");
         }
-        RideStatus status = this.requestedRide.getStatus();
-        if(status==RideStatus.RIDE_STARTED || status==RideStatus.COMPLETED){
-            throw new RuntimeException("Cannot cancel a ride that has already started or completed");
-        }
-        this.requestedRide.setStatus(RideStatus.CANCELLED);
+        riderService.cancelRequestedRide(requestedRide);
         this.requestedRide=null;
     }
 
@@ -67,7 +63,6 @@ public class Rider {
     public void endRide(){
         System.out.println(this.name+" 's Ride Ended. Ride status is " +this.requestedRide.getStatus());
         System.out.println("The rides total fare is: "+this.currRide.getEstimatedFare());
-        this.isInRide = false;
-        
+        this.isInRide = false;        
     }
 }
