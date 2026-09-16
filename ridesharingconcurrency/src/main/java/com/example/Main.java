@@ -6,8 +6,9 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Hello world!");
 
-        DriverPool dp = DriverPool.getInstance();
-        DriverMatching matchingEngine = DriverMatching.getInstance(new NearestDriverStrategy());
+        DriverPool dp = new DriverPool();
+        DriverMatching driverMatching = new DriverMatching(new NearestDriverStrategy());
+        RiderService rs = new RiderService(dp, driverMatching);
 
         Vehicle vh1 = new Vehicle(VehicleType.BIKE, 677676);
         Driver d1 = new Driver(123, "Arun", new Location(10, 200), vh1);
@@ -34,12 +35,12 @@ public class Main {
         dp.addDriver(d5);
         dp.addDriver(d6);
 
-        Rider r1 = new Rider(22,"NTR",new Location(78,66));
-        Rider r2 = new Rider(25,"AA",new Location(22,25));
+        Rider r1 = new Rider(22,"NTR",new Location(78,66),rs);
+        Rider r2 = new Rider(25,"AA",new Location(22,25),rs);
 
         r1.createRideRequest(new Location(99, 366),VehicleType.BIKE);
         
-        d5.rejectRide();
+        d5.rejectRide(driverMatching,dp);
         d1.acceptRide();
 
         d1.startRide();

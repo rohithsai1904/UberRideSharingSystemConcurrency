@@ -5,17 +5,20 @@ public class Rider {
     private int id;
     private String name;
     private Location curLoc;
+    private final RiderService riderService;
+
     private boolean isInRide;
     private RideRequest requestedRide;
     private Ride currRide;
     
-    public Rider(int id,String name,Location location){
+    public Rider(int id,String name,Location location,RiderService riderService){
         this.id=id;
         this.name=name;
         this.curLoc=location;
         this.requestedRide=null;
         this.isInRide=false;
         this.currRide= null;
+        this.riderService=riderService;
     }
 
     public String getName(){
@@ -30,9 +33,7 @@ public class Rider {
         if(isInRide){
             throw new RuntimeException("Rider is already in a ride");
         }
-        this.requestedRide = new RideRequest(this, curLoc, destination, vehicleType);
-        
-        DriverMatching.getInstance().processRequest(requestedRide, DriverPool.getInstance());
+        this.requestedRide = riderService.createRideRequest(this, this.curLoc, destination, vehicleType);
     }
 
     public void cancelRequestedRide(){

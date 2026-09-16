@@ -65,11 +65,11 @@ public class Driver {
         this.rr = rideRequest;
     }
 
-    public void rejectRide(){
+    public void rejectRide(DriverMatching driverMatching,DriverPool dp){
         System.out.println(this.name+" rejected the ride");
         this.rr.addDriver(this);
         this.rr.setStatus(RideStatus.REQUESTED);
-        DriverMatching.getInstance().processRequest(this.rr, DriverPool.getInstance());
+        driverMatching.processRequest(rr, dp);
         this.rr = null;
     }
 
