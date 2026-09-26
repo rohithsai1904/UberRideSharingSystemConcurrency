@@ -1,7 +1,8 @@
 package com.example.strategy.drivermatching;
 
-import com.example.Driver;
 import com.example.RideRequest;
+import com.example.drivers.Driver;
+
 import java.util.List;
 
 public interface DriverMatchingStrategy{

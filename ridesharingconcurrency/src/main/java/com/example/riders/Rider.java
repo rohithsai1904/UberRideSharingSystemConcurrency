@@ -1,5 +1,9 @@
-package com.example;
+package com.example.riders;
 
+import com.example.Ride;
+import com.example.RideRequest;
+import com.example.object.Location;
+import com.example.vehicle.VehicleType;
 
 public class Rider {
     private int id;

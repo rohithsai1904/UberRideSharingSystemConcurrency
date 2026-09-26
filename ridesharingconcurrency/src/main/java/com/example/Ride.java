@@ -3,6 +3,10 @@ package com.example;
 import java.math.BigDecimal;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.example.drivers.Driver;
+import com.example.enums.RideStatus;
+import com.example.riders.Rider;
+
 public class Ride {
     private int otp;
     private Rider rider;

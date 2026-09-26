@@ -1,4 +1,4 @@
-package com.example;
+package com.example.object;
 
 public class Location {
     int X;

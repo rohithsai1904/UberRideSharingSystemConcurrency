@@ -1,4 +1,4 @@
-package com.example;
+package com.example.enums;
 
 public enum DriverStatus {
     AVAILABLE,

@@ -1,4 +1,11 @@
-package com.example;
+package com.example.drivers;
+
+import com.example.Ride;
+import com.example.RideRequest;
+import com.example.enums.DriverStatus;
+import com.example.enums.RideStatus;
+import com.example.object.Location;
+import com.example.vehicle.Vehicle;
 
 public class Driver {
     private int id;
@@ -67,7 +74,7 @@ public class Driver {
 
     public void rejectRide(DriverMatching driverMatching,DriverPool dp){
         System.out.println(this.name+" rejected the ride");
-        this.rr.addDriver(this);
+        this.rr.addRejectedDriver(this);
         this.rr.setStatus(RideStatus.REQUESTED);
         driverMatching.processRequest(rr, dp);
         this.rr = null;

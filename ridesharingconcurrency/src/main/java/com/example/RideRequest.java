@@ -4,8 +4,13 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.example.drivers.Driver;
+import com.example.enums.RideStatus;
+import com.example.object.Location;
+import com.example.riders.Rider;
 import com.example.strategy.pricing.PricingStrategy;
 import com.example.strategy.pricing.StandardPricingStrategy;
+import com.example.vehicle.VehicleType;
 
 public class RideRequest {
 
@@ -61,7 +66,7 @@ public class RideRequest {
         this.status = status;
     }
 
-    public void addDriver(Driver driver){
+    public void addRejectedDriver(Driver driver){
         this.rejectedDrivers.add(driver);
     }
 

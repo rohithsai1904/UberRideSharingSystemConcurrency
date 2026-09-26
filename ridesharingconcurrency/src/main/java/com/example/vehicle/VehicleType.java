@@ -1,4 +1,4 @@
-package com.example;
+package com.example.vehicle;
 
 public enum VehicleType {
     SEDAN,

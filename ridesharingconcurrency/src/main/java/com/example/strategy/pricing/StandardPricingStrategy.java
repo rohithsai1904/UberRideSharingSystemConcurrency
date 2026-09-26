@@ -3,8 +3,8 @@ package com.example.strategy.pricing;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import com.example.Location;
-import com.example.VehicleType;
+import com.example.object.Location;
+import com.example.vehicle.VehicleType;
 
 public class StandardPricingStrategy implements PricingStrategy {
     private static final BigDecimal BASE_FARE = new BigDecimal("30.00");

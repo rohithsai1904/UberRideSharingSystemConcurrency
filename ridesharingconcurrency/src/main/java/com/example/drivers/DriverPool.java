@@ -1,9 +1,11 @@
-package com.example;
+package com.example.drivers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.example.vehicle.VehicleType;
 
 public class DriverPool {
 

@@ -1,4 +1,4 @@
-package com.example;
+package com.example.vehicle;
 
 public class Vehicle {
     private VehicleType vt;

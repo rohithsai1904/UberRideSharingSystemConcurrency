@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
 
-import com.example.Location;
-import com.example.VehicleType;
+import com.example.object.Location;
+import com.example.vehicle.VehicleType;
 
 public final class SurgePricingStrategy implements PricingStrategy {
     private static final BigDecimal MINIMUM_MULTIPLIER = BigDecimal.ONE;

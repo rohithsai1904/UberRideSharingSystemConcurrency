@@ -1,6 +1,14 @@
 package com.example;
 
+import com.example.drivers.Driver;
+import com.example.drivers.DriverMatching;
+import com.example.drivers.DriverPool;
+import com.example.object.Location;
+import com.example.riders.Rider;
+import com.example.riders.RiderService;
 import com.example.strategy.drivermatching.NearestDriverStrategy;
+import com.example.vehicle.Vehicle;
+import com.example.vehicle.VehicleType;
 
 public class Main {
     public static void main(String[] args) {
@@ -42,11 +50,8 @@ public class Main {
         
         d5.rejectRide(driverMatching,dp);
         d1.acceptRide();
-
         d1.startRide();
-        
         r1.viewStatus();
-
         d1.endRide();
 
 

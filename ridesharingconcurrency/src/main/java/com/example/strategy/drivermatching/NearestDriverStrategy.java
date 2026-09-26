@@ -1,9 +1,9 @@
 package com.example.strategy.drivermatching;
 
-import com.example.Driver;
 import com.example.RideRequest;
-import com.example.DriverStatus;
-import com.example.Location;
+import com.example.drivers.Driver;
+import com.example.enums.DriverStatus;
+import com.example.object.Location;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import java.util.List;
 public class NearestDriverStrategy implements DriverMatchingStrategy{
 
     @Override
-    public Driver findDriver(List<Driver> drivers,RideRequest req){
+    public synchronized Driver findDriver(List<Driver> drivers,RideRequest req){
 
         Driver nearestDriver = null;
         int minDistance = Integer.MAX_VALUE;
