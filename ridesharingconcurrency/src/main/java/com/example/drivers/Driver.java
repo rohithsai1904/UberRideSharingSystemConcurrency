@@ -5,6 +5,7 @@ import com.example.RideRequest;
 import com.example.enums.DriverStatus;
 import com.example.enums.RideStatus;
 import com.example.object.Location;
+import com.example.riders.Rider;
 import com.example.vehicle.Vehicle;
 
 public class Driver {
@@ -86,9 +87,11 @@ public class Driver {
         }
         System.out.println(this.name+" accepted the ride. Rider Name: "+ this.rr.getRider().getName());
         this.rr.setStatus(RideStatus.DRIVER_ASSIGNED);
-        this.status = DriverStatus.BUSY;
-        this.currentRide = new Ride(this, rr);
-        this.rr.getRider().assignRide(this.currentRide);
+        if(this.rr.setDriverForTheRide()){
+            this.status = DriverStatus.BUSY;
+            this.currentRide = new Ride(this, rr);
+            this.rr.getRider().assignRide(this.currentRide);
+        }
         this.rr = null;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.drivers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,34 +10,49 @@ import com.example.vehicle.VehicleType;
 
 public class DriverPool {
 
-    private List<Driver> drivers;
-    private Map<VehicleType, List<Driver>> driverVehicleMap;
+    private final List<Driver> drivers = new ArrayList<>();
+    private final Map<VehicleType, List<Driver>> driverVehicleMap =
+            new HashMap<>();
 
-    public DriverPool(){
-        drivers = new ArrayList<>();
-        driverVehicleMap = new HashMap<>();
-    }
-
-    public void addDriver(Driver driver){
+    public synchronized void addDriver(Driver driver) {
         drivers.add(driver);
-        
-        VehicleType vt = driver.getVehicle().getVehicleType();
-        driverVehicleMap.computeIfAbsent(vt, k -> new ArrayList<>()).add(driver);
+
+        VehicleType vehicleType =
+                driver.getVehicle().getVehicleType();
+
+        driverVehicleMap
+                .computeIfAbsent(vehicleType, k -> new ArrayList<>())
+                .add(driver);
     }
 
-    public void removeDriver(Driver driver){
+    public synchronized void removeDriver(Driver driver) {
         drivers.remove(driver);
 
-        VehicleType vt = driver.getVehicle().getVehicleType();
-        driverVehicleMap.computeIfAbsent(vt, k -> new ArrayList<>()).remove(driver);
+        VehicleType vehicleType =
+                driver.getVehicle().getVehicleType();
+
+        List<Driver> driversOfType =
+                driverVehicleMap.get(vehicleType);
+
+        if (driversOfType != null) {
+            driversOfType.remove(driver);
+
+            if (driversOfType.isEmpty()) {
+                driverVehicleMap.remove(vehicleType);
+            }
+        }
     }
 
-    public List<Driver> getDriverOfType(VehicleType vt){
-       List<Driver> driversOfType = driverVehicleMap.get(vt);
-        if (driversOfType != null) {
-            return driversOfType;
+    public synchronized List<Driver> getDriversOfType(
+            VehicleType vehicleType) {
+
+        List<Driver> driversOfType =
+                driverVehicleMap.get(vehicleType);
+
+        if (driversOfType == null) {
+            return Collections.emptyList();
         }
-        throw new RuntimeException("No Such VehicleType exists");
+
+        return new ArrayList<>(driversOfType);
     }
-    
 }
