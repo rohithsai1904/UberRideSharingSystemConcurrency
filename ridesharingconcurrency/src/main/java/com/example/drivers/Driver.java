@@ -5,8 +5,10 @@ import com.example.RideRequest;
 import com.example.enums.DriverStatus;
 import com.example.enums.RideStatus;
 import com.example.object.Location;
-import com.example.riders.Rider;
 import com.example.vehicle.Vehicle;
+
+import java.util.List;
+import java.util.ArrayList;
 
 public class Driver {
     private int id;
@@ -16,6 +18,7 @@ public class Driver {
     private Vehicle vh;
     private RideRequest rr;
     private Ride currentRide;
+    private final List<RideRequest> offers;
 
     public Driver(int id,String name,Location loc,Vehicle vh){
         this.vh =vh;
@@ -25,6 +28,7 @@ public class Driver {
         this.status = DriverStatus.AVAILABLE;
         this.rr = null;
         this.currentRide = null;
+        this.offers = new ArrayList<>();
     }
 
     public DriverStatus getDriverStatus(){
@@ -70,7 +74,7 @@ public class Driver {
     }
 
     public void offerRide(RideRequest rideRequest){
-        this.rr = rideRequest;
+        this.offers.add(rideRequest);
     }
 
     public void rejectRide(DriverMatching driverMatching,DriverPool dp){
@@ -81,17 +85,16 @@ public class Driver {
         this.rr = null;
     }
 
-    public void acceptRide(){
-        if (this.rr == null) {
-            throw new RuntimeException("No ride offered");
+    public synchronized void acceptRide(RideRequest req){
+        if(this.status!=DriverStatus.AVAILABLE){
+            return;
         }
-        System.out.println(this.name+" accepted the ride. Rider Name: "+ this.rr.getRider().getName());
-        this.rr.setStatus(RideStatus.DRIVER_ASSIGNED);
-        if(this.rr.setDriverForTheRide()){
+        if(req.getStatus()==RideStatus.REQUESTED){
+            System.out.println(this.name+" accepted the ride. Rider Name: "+ req.getRider().getName());
             this.status = DriverStatus.BUSY;
-            this.currentRide = new Ride(this, rr);
-            this.rr.getRider().assignRide(this.currentRide);
+            this.rr = req;
+            this.currentRide = new Ride(this,req);
+            req.setStatus(RideStatus.DRIVER_ASSIGNED);
         }
-        this.rr = null;
     }
 }
