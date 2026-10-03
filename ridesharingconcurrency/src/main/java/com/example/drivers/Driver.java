@@ -43,7 +43,7 @@ public class Driver {
         return this.vh;
     }
 
-    public void setStatus(DriverStatus status){
+    public synchronized void setStatus(DriverStatus status){
         this.status=status;
     }
 
@@ -63,24 +63,26 @@ public class Driver {
     }
 
     public void startRide(){
-        this.currentRide.setStatus(RideStatus.RIDE_STARTED);
+        if(this.currentRide!=null)
+            this.currentRide.setStatus(RideStatus.RIDE_STARTED);
     }
 
     public void endRide(){
-        this.currentRide.setStatus(RideStatus.COMPLETED);
-        this.status = DriverStatus.AVAILABLE;
-        System.out.println(this.currentRide.getEstimatedFare()+" is the Amount to be collected");
-        this.currentRide.getRider().endRide();
+        if(this.currentRide!=null)
+            this.currentRide.setStatus(RideStatus.COMPLETED);
+            this.status = DriverStatus.AVAILABLE;
+            System.out.println(this.currentRide.getEstimatedFare()+" is the Amount to be collected");
+            this.currentRide.getRider().endRide();
     }
 
     public void offerRide(RideRequest rideRequest){
-        this.offers.add(rideRequest);
+        if(rideRequest!=null)
+            this.offers.add(rideRequest);
     }
 
-    public void rejectRide(DriverMatching driverMatching,DriverPool dp){
+    public synchronized void rejectRide(DriverMatching driverMatching,DriverPool dp){
         System.out.println(this.name+" rejected the ride");
         this.rr.addRejectedDriver(this);
-        this.rr.setStatus(RideStatus.REQUESTED);
         driverMatching.processRequest(rr, dp);
         this.rr = null;
     }
@@ -89,12 +91,21 @@ public class Driver {
         if(this.status!=DriverStatus.AVAILABLE){
             return;
         }
-        if(req.getStatus()==RideStatus.REQUESTED){
+        if(req.reserveRide()){
             System.out.println(this.name+" accepted the ride. Rider Name: "+ req.getRider().getName());
             this.status = DriverStatus.BUSY;
             this.rr = req;
             this.currentRide = new Ride(this,req);
-            req.setStatus(RideStatus.DRIVER_ASSIGNED);
+        }
+        else{
+            System.out.println("Somebody accepeted the ride");
+        }
+    }
+
+    public void viewOfferedRequests(){
+        for(RideRequest req: this.offers){
+            if(req.getStatus()==RideStatus.REQUESTED)
+                System.out.println(req.getRider()+" "+req.getSourceLocation()+" "+req.getDestinationLocation()+" "+req.getEstimatedFare() )
         }
     }
 }

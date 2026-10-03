@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.example.drivers.Driver;
-import com.example.enums.DriverStatus;
 import com.example.enums.RideStatus;
 import com.example.object.Location;
 import com.example.riders.Rider;
@@ -83,4 +82,10 @@ public class RideRequest {
         return this.rejectedDrivers;
     }
 
+    public synchronized boolean reserveRide(){
+        if(this.getStatus()==RideStatus.REQUESTED){
+            this.setStatus(RideStatus.DRIVER_ASSIGNED);
+        }
+        return false;
+    }
 }

@@ -46,10 +46,10 @@ public class Main {
         Rider r1 = new Rider(22,"NTR",new Location(78,66),rs);
         Rider r2 = new Rider(25,"AA",new Location(22,25),rs);
 
-        r1.createRideRequest(new Location(99, 366),VehicleType.BIKE);
+        RideRequest req1 = r1.createRideRequest(new Location(99, 366),VehicleType.BIKE);
         
         d5.rejectRide(driverMatching,dp);
-        d1.acceptRide();
+        d1.acceptRide(req1);
         d1.startRide();
         r1.viewStatus();
         d1.endRide();

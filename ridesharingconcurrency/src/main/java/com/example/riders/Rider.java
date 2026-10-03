@@ -33,11 +33,12 @@ public class Rider {
         return this.curLoc;
     }
 
-    public void createRideRequest(Location destination,VehicleType vehicleType){
+    public RideRequest createRideRequest(Location destination,VehicleType vehicleType){
         if(isInRide){
             throw new RuntimeException("Rider is already in a ride");
         }
         this.requestedRide = riderService.createRideRequest(this, this.curLoc, destination, vehicleType);
+        return this.requestedRide;
     }
 
     public void cancelRequestedRide(){
