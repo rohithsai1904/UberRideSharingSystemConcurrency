@@ -47,14 +47,14 @@ public class Driver {
         this.status=status;
     }
 
-    public void goOffline(){
+    public synchronized void goOffline(){
         if(status==DriverStatus.BUSY){
             throw new RuntimeException("Cannot go to Offline when BUSY");
         }
         this.setStatus(DriverStatus.OFFLINE);
     }
 
-    public void goOnline(){
+    public synchronized void goOnline(){
         this.setStatus(DriverStatus.AVAILABLE);
     }
 
@@ -68,7 +68,7 @@ public class Driver {
     }
 
     public void endRide(){
-        if(this.currentRide!=null)
+        if(this.currentRide!=null & this.status!=DriverStatus.BUSY)
             this.currentRide.setStatus(RideStatus.COMPLETED);
             this.status = DriverStatus.AVAILABLE;
             System.out.println(this.currentRide.getEstimatedFare()+" is the Amount to be collected");
@@ -105,7 +105,14 @@ public class Driver {
     public void viewOfferedRequests(){
         for(RideRequest req: this.offers){
             if(req.getStatus()==RideStatus.REQUESTED)
-                System.out.println(req.getRider()+" "+req.getSourceLocation()+" "+req.getDestinationLocation()+" "+req.getEstimatedFare() )
+                System.out.println(req.getRider()+" "+req.getSourceLocation()+" "+req.getDestinationLocation()+" "+req.getEstimatedFare());
         }
+    }
+
+    public synchronized boolean isDriverAvailable(){
+        if(this.status!=DriverStatus.AVAILABLE){
+            return false;
+        }
+        return true;
     }
 }

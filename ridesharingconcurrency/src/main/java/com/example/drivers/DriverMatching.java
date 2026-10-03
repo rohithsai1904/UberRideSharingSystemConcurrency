@@ -23,7 +23,8 @@ public class DriverMatching {
         
         else{
             for(Driver d: driverList){
-                d.offerRide(request);
+                if(d.isDriverAvailable())
+                    d.offerRide(request);
             }
         }
     }

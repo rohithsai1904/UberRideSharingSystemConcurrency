@@ -18,7 +18,7 @@ public class NearestDriverStrategy implements DriverMatchingStrategy{
         Location srcLocation = req.getSourceLocation(); 
 
         for(Driver driver: drivers){
-            if(!(req.getRejectedDriver().contains(driver)) && driver.getDriverStatus()==DriverStatus.AVAILABLE){
+            if(!(req.getRejectedDriver().contains(driver)) && driver.isDriverAvailable()){
 
                 Location driverLoc = driver.getLocation();
                 
