@@ -5,6 +5,7 @@ import com.example.RideRequest;
 import com.example.enums.DriverStatus;
 import com.example.enums.RideStatus;
 import com.example.object.Location;
+import com.example.riders.Rider;
 import com.example.vehicle.Vehicle;
 
 import java.util.List;
@@ -49,7 +50,8 @@ public class Driver {
 
     public synchronized void goOffline(){
         if(status==DriverStatus.BUSY){
-            throw new RuntimeException("Cannot go to Offline when BUSY");
+            System.out.println("Driver cannot go offline in middle on ride");
+            return;
         }
         this.setStatus(DriverStatus.OFFLINE);
     }
@@ -63,8 +65,11 @@ public class Driver {
     }
 
     public void startRide(){
-        if(this.currentRide!=null)
+        if(this.currentRide!=null){
+            Rider r = this.currentRide.getRider();
+            r.assignRide(currentRide);
             this.currentRide.setStatus(RideStatus.RIDE_STARTED);
+        }
     }
 
     public void endRide(){
@@ -75,9 +80,13 @@ public class Driver {
             this.currentRide.getRider().endRide();
     }
 
-    public void offerRide(RideRequest rideRequest){
+    public boolean offerRide(RideRequest rideRequest){
+        if(this.status != DriverStatus.AVAILABLE){
+            return false;
+        }
         if(rideRequest!=null)
             this.offers.add(rideRequest);
+        return true;
     }
 
     public synchronized void rejectRide(DriverMatching driverMatching,DriverPool dp){
@@ -89,6 +98,9 @@ public class Driver {
 
     public synchronized void acceptRide(RideRequest req){
         if(this.status!=DriverStatus.AVAILABLE){
+            return;
+        }
+        if(req.getStatus()==RideStatus.CANCELLED){
             return;
         }
         if(req.reserveRide()){

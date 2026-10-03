@@ -25,9 +25,9 @@ public class RiderService {
 
     public void cancelRequestedRide(RideRequest requestedRide){
         RideStatus status = requestedRide.getStatus();
-        if(status==RideStatus.RIDE_STARTED || status==RideStatus.COMPLETED){
-            throw new RuntimeException("Cannot cancel a ride that has already started or completed");
+        if(status==RideStatus.DRIVER_ASSIGNED || status==RideStatus.REQUESTED){
+            requestedRide.setStatus(RideStatus.CANCELLED);
         }
-        requestedRide.setStatus(RideStatus.CANCELLED);
+        
     }
 }

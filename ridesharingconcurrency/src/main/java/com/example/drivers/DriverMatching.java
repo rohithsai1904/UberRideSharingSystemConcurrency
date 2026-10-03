@@ -18,7 +18,9 @@ public class DriverMatching {
         
         if(matchingStrategy!=null){
             Driver driver =  matchingStrategy.findDriver(driverList, request);
-            driver.offerRide(request);
+            if(driver.offerRide(request)==false){
+                processRequest(request, driverpool);
+            };
         }
         
         else{
