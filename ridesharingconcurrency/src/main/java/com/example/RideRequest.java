@@ -1,8 +1,8 @@
 package com.example;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.example.drivers.Driver;
 import com.example.enums.RideStatus;
@@ -35,7 +35,7 @@ public class RideRequest {
         this.vehicleType = vehicleType;
         this.estimatedFare = pricingStrategy.calculateEstimatedFare(source, destination, vehicleType);
         this.status = RideStatus.REQUESTED;
-        this.rejectedDrivers = new HashSet<>();
+        this.rejectedDrivers = ConcurrentHashMap.newKeySet();
     }
 
     public BigDecimal getEstimatedFare() {
@@ -83,9 +83,19 @@ public class RideRequest {
     }
 
     public synchronized boolean reserveRide(){
-        if(this.getStatus()==RideStatus.REQUESTED){
+        if(this.status==RideStatus.REQUESTED){
             this.setStatus(RideStatus.DRIVER_ASSIGNED);
+            return true;
         }
         return false;
+    }
+
+    public synchronized boolean timeoutDriver(Driver driver) {
+        if (this.status != RideStatus.REQUESTED) {
+            return false;
+        }
+    
+        rejectedDrivers.add(driver);
+        return true;
     }
 }

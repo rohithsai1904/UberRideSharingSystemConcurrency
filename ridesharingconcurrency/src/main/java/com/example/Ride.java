@@ -6,6 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import com.example.drivers.Driver;
 import com.example.enums.RideStatus;
 import com.example.riders.Rider;
+import com.example.object.Location;;
 
 public class Ride {
     private int otp;
@@ -13,12 +14,14 @@ public class Ride {
     private BigDecimal estimatedFare;
     private RideStatus status;
     private Driver driver;
+    private Location destnLocation;
 
     public Ride(Driver driver, RideRequest req) {
         this.rider = req.getRider();
         this.driver = driver;
         this.estimatedFare = req.getEstimatedFare();
         this.status = req.getStatus();
+        this.destnLocation = req.getDestinationLocation();
     }
 
     public Rider getRider() {
@@ -51,5 +54,12 @@ public class Ride {
 
     public void clearDriver() {
         this.driver = null;
+    }
+
+    public boolean canEndRide(){
+        if(driver.getLocation().getEuclideanDistance(this.destnLocation)==0){
+            return true;
+        }
+        return false;
     }
 }

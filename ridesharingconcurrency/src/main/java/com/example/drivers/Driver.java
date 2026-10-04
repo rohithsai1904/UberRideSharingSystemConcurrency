@@ -8,8 +8,10 @@ import com.example.object.Location;
 import com.example.riders.Rider;
 import com.example.vehicle.Vehicle;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Driver {
     private int id;
@@ -20,8 +22,10 @@ public class Driver {
     private RideRequest rr;
     private Ride currentRide;
     private final List<RideRequest> offers;
+    private final ScheduledExecutorService scheduler;
 
-    public Driver(int id,String name,Location loc,Vehicle vh){
+
+    public Driver(int id,String name,Location loc,Vehicle vh,ScheduledExecutorService scheduler){
         this.vh =vh;
         this.id =id;
         this.name = name;
@@ -30,9 +34,10 @@ public class Driver {
         this.rr = null;
         this.currentRide = null;
         this.offers = new ArrayList<>();
+        this.scheduler = scheduler;
     }
 
-    public DriverStatus getDriverStatus(){
+    public synchronized DriverStatus getDriverStatus(){
         return this.status;
     }
 
@@ -53,47 +58,95 @@ public class Driver {
             System.out.println("Driver cannot go offline in middle on ride");
             return;
         }
-        this.setStatus(DriverStatus.OFFLINE);
+        this.status = DriverStatus.OFFLINE;
     }
 
     public synchronized void goOnline(){
-        this.setStatus(DriverStatus.AVAILABLE);
+        this.status = DriverStatus.AVAILABLE;
     }
 
-    public Ride getCurrentRide() {
+    public synchronized Ride getCurrentRide() {
         return this.currentRide;
     }
 
-    public void startRide(){
-        if(this.currentRide!=null){
-            Rider r = this.currentRide.getRider();
-            r.assignRide(currentRide);
-            this.currentRide.setStatus(RideStatus.RIDE_STARTED);
+    public synchronized void startRide(){
+
+        if (this.currentRide == null) {
+            return;
         }
+    
+        if (this.currentRide.getStatus() != RideStatus.DRIVER_ASSIGNED) {
+            return;
+        }
+    
+        Rider r = this.currentRide.getRider();
+        r.assignRide(currentRide);
+        this.currentRide.setStatus(RideStatus.RIDE_STARTED);
     }
 
-    public void endRide(){
-        if(this.currentRide!=null & this.status!=DriverStatus.BUSY)
-            this.currentRide.setStatus(RideStatus.COMPLETED);
-            this.status = DriverStatus.AVAILABLE;
-            System.out.println(this.currentRide.getEstimatedFare()+" is the Amount to be collected");
-            this.currentRide.getRider().endRide();
+    public synchronized void endRide() {
+
+        if (this.currentRide == null) {
+            return;
+        }
+    
+        if (this.status != DriverStatus.BUSY) {
+            return;
+        }
+    
+        if (!this.currentRide.canEndRide()) {
+            return;
+        }
+    
+        this.currentRide.setStatus(RideStatus.COMPLETED);
+        this.status = DriverStatus.AVAILABLE;
+    
+        System.out.println(
+            this.currentRide.getEstimatedFare()
+            + " is the Amount to be collected"
+        );
+    
+        this.currentRide.getRider().endRide();
     }
 
-    public boolean offerRide(RideRequest rideRequest){
+    public synchronized void markTimeoutForDriver(RideRequest req) {
+        if (!req.timeoutDriver(this)) {
+            return;
+        }
+
+        this.offers.remove(req);
+    }
+
+    public synchronized boolean offerRide(RideRequest rideRequest){
         if(this.status != DriverStatus.AVAILABLE){
             return false;
         }
-        if(rideRequest!=null)
-            this.offers.add(rideRequest);
+
+        if (rideRequest == null) {
+            return false;
+        }
+        this.offers.add(rideRequest);
+
+        scheduler.schedule(()->{
+            markTimeoutForDriver(rideRequest);
+        }, 10, TimeUnit.SECONDS);
+
         return true;
     }
 
-    public synchronized void rejectRide(DriverMatching driverMatching,DriverPool dp){
-        System.out.println(this.name+" rejected the ride");
-        this.rr.addRejectedDriver(this);
-        driverMatching.processRequest(rr, dp);
-        this.rr = null;
+    public  void rejectRide(DriverMatching driverMatching,DriverPool dp,RideRequest req){
+        if (req == null) {
+            return;
+        }
+    
+        synchronized (this) {
+            System.out.println(this.name + " rejected the ride");
+            this.offers.remove(req);
+        }
+    
+        req.addRejectedDriver(this);
+    
+        driverMatching.processRequest(req, dp);
     }
 
     public synchronized void acceptRide(RideRequest req){
@@ -101,6 +154,9 @@ public class Driver {
             return;
         }
         if(req.getStatus()==RideStatus.CANCELLED){
+            return;
+        }
+        if (req.getRejectedDriver().contains(this)) {
             return;
         }
         if(req.reserveRide()){
@@ -114,7 +170,7 @@ public class Driver {
         }
     }
 
-    public void viewOfferedRequests(){
+    public synchronized void viewOfferedRequests(){
         for(RideRequest req: this.offers){
             if(req.getStatus()==RideStatus.REQUESTED)
                 System.out.println(req.getRider()+" "+req.getSourceLocation()+" "+req.getDestinationLocation()+" "+req.getEstimatedFare());

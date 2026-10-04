@@ -10,6 +10,9 @@ import com.example.strategy.drivermatching.NearestDriverStrategy;
 import com.example.vehicle.Vehicle;
 import com.example.vehicle.VehicleType;
 
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Executors;
+
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello world!");
@@ -17,24 +20,25 @@ public class Main {
         DriverPool dp = new DriverPool();
         DriverMatching driverMatching = new DriverMatching(new NearestDriverStrategy());
         RiderService rs = new RiderService(dp, driverMatching);
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
 
         Vehicle vh1 = new Vehicle(VehicleType.BIKE, 677676);
-        Driver d1 = new Driver(123, "Arun", new Location(10, 200), vh1);
+        Driver d1 = new Driver(123, "Arun", new Location(10, 200), vh1,scheduler);
 
         Vehicle vh2 = new Vehicle(VehicleType.SEDAN, 112233);
-        Driver d2 = new Driver(124, "Priya", new Location(15, 180), vh2);
+        Driver d2 = new Driver(124, "Priya", new Location(15, 180), vh2,scheduler);
 
         Vehicle vh3 = new Vehicle(VehicleType.AUTO, 445566);
-        Driver d3 = new Driver(125, "Ravi", new Location(8, 210), vh3);
+        Driver d3 = new Driver(125, "Ravi", new Location(8, 210), vh3,scheduler);
 
         Vehicle vh4 = new Vehicle(VehicleType.SUV, 778899);
-        Driver d4 = new Driver(126, "Meena", new Location(25, 150), vh4);
+        Driver d4 = new Driver(126, "Meena", new Location(25, 150), vh4,scheduler);
 
         Vehicle vh5 = new Vehicle(VehicleType.BIKE, 990011);
-        Driver d5 = new Driver(127, "Karthik", new Location(112, 195), vh5);
+        Driver d5 = new Driver(127, "Karthik", new Location(112, 195), vh5,scheduler);
 
         Vehicle vh6 = new Vehicle(VehicleType.SEDAN, 334455);
-        Driver d6 = new Driver(128, "Sneha", new Location(30, 120), vh6);
+        Driver d6 = new Driver(128, "Sneha", new Location(30, 120), vh6,scheduler);
 
         dp.addDriver(d1);
         dp.addDriver(d2);

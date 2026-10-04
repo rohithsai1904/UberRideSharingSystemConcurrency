@@ -11,7 +11,7 @@ public class Rider {
     private Location curLoc;
     private final RiderService riderService;
 
-    private boolean isInRide;
+    private int isInRide;
     private RideRequest requestedRide;
     private Ride currRide;
     
@@ -20,7 +20,7 @@ public class Rider {
         this.name=name;
         this.curLoc=location;
         this.requestedRide=null;
-        this.isInRide=false;
+        this.isInRide=0;
         this.currRide= null;
         this.riderService=riderService;
     }
@@ -34,7 +34,7 @@ public class Rider {
     }
 
     public RideRequest createRideRequest(Location destination,VehicleType vehicleType){
-        if(isInRide){
+        if(isInRide!=0){
             throw new RuntimeException("Rider is already in a ride");
         }
         this.requestedRide = riderService.createRideRequest(this, this.curLoc, destination, vehicleType);
@@ -50,14 +50,16 @@ public class Rider {
     }
 
     public void viewStatus(){
-        if(isInRide)
+        if(isInRide==1 && this.requestedRide!=null)
             System.out.println(this.name+" 's Ride status is " +this.requestedRide.getStatus());
-        else
+        else if(isInRide==2 && this.currRide!=null)
             System.out.println(this.name+" 's Ride status is " +this.currRide.getStatus());
+        else
+            System.out.println("Rider "+ this.name +" Idle");
     }
 
     public void assignRide(Ride ride){
-        this.isInRide=true;
+        this.isInRide=2;
         this.currRide = ride;
     }
 
@@ -68,6 +70,6 @@ public class Rider {
     public void endRide(){
         System.out.println(this.name+" 's Ride Ended. Ride status is " +this.requestedRide.getStatus());
         System.out.println("The rides total fare is: "+this.currRide.getEstimatedFare());
-        this.isInRide = false;        
+        this.isInRide = 0;        
     }
 }

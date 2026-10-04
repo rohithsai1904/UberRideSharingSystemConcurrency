@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 import com.example.vehicle.VehicleType;
 
 public class DriverPool {
 
     private final List<Driver> drivers = new ArrayList<>();
-    private final Map<VehicleType, List<Driver>> driverVehicleMap =
-            new HashMap<>();
+    private final Map<VehicleType, List<Driver>> driverVehicleMap = new HashMap<>();
 
     public synchronized void addDriver(Driver driver) {
         drivers.add(driver);
