@@ -37,6 +37,10 @@ public class Driver {
         return this.status;
     }
 
+    public void setStatus(DriverStatus status){
+        this.status = status;
+    }
+
     public void setLocation(Location loc){
         this.curLoc = loc;
     }
@@ -90,11 +94,7 @@ public class Driver {
     }
 
     public void collectMoney(){
-        System.out.println(
-            this.currentRide.getEstimatedFare()
-            + " is the Amount to be collected"
-        );
-        
+        System.out.println( this.currentRide.getFinalFare() + " is the Amount to be collected");     
     }
 
     public void markTimeoutForDriver(RideRequest req) {
@@ -160,6 +160,11 @@ public class Driver {
             return false;
         }
         return true;
+    }
+
+    public void rideCancelled(){
+        this.status = DriverStatus.AVAILABLE;
+        collectMoney();
     }
 
     @Override 

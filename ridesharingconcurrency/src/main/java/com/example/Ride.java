@@ -12,19 +12,30 @@ import com.example.object.Location;
 public class Ride {
     private int otp;
     private Rider rider;
+    private BigDecimal finalFare;
     private BigDecimal estimatedFare;
     private volatile RideStatus status;
     private Driver driver;
     private Location destnLocation;
     private Location pickUpLocation;
+    private final Location initialLocation;
+
+    private long startTime;
+    private long endTime;
 
     public Ride(Driver driver, RideRequest req) {
         this.rider = req.getRider();
         this.driver = driver;
-        this.estimatedFare = req.getEstimatedFare();
         this.status = RideStatus.DRIVER_ASSIGNED;
         this.destnLocation = req.getDestinationLocation();
         this.pickUpLocation = req.getSourceLocation();
+        this.initialLocation = driver.getLocation();
+        this.startTime = System.nanoTime();
+        this.estimatedFare = req.getEstimatedFare();
+    }
+
+    public Location getInitialLocation(){
+        return this.initialLocation;
     }
 
     public Rider getRider() {
@@ -35,8 +46,12 @@ public class Ride {
         return this.driver;
     }
 
-    public BigDecimal getEstimatedFare() {
-        return this.estimatedFare;
+    public BigDecimal getFinalFare() {
+        return this.finalFare;
+    }
+
+    public void setEstimatedFare(BigDecimal finalFare) {
+        this.finalFare = finalFare;
     }
 
     public RideStatus getStatus() {
@@ -75,6 +90,7 @@ public class Ride {
         }
         if(this.status!=RideStatus.RIDE_STARTED)
             return;
+        this.endTime = System.nanoTime();
         this.status = RideStatus.COMPLETED;
         this.rider.endRide();
     }
@@ -82,7 +98,12 @@ public class Ride {
     public synchronized void cancelRide(){
         if(this.status!=RideStatus.RIDE_STARTED)
             return;
+        this.finalFare = new BigDecimal("0.15").multiply(this.estimatedFare);
         this.status = RideStatus.CANCELLED;
+    }
+
+    public long getTime(){
+        return this.endTime - this.startTime;
     }
 
     @Override 

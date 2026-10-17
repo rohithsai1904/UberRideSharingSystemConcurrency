@@ -8,8 +8,6 @@ import com.example.drivers.Driver;
 import com.example.enums.RideRequestStatus;
 import com.example.object.Location;
 import com.example.riders.Rider;
-import com.example.strategy.pricing.PricingStrategy;
-import com.example.strategy.pricing.StandardPricingStrategy;
 import com.example.vehicle.VehicleType;
 
 public class RideRequest {
@@ -18,28 +16,26 @@ public class RideRequest {
     private final Location source;
     private final Location destination;
     private final VehicleType vehicleType;
-    private final BigDecimal estimatedFare;
+    private BigDecimal estimatedFare;
     private RideRequestStatus status;
     private Set<Driver> rejectedDrivers;
 
-    public RideRequest(Rider rider, Location sourceLocation, Location destinationLocation,
-                       VehicleType vehicleType) {
-        this(rider, sourceLocation, destinationLocation, vehicleType, new StandardPricingStrategy());
-    }
 
-    public RideRequest(Rider rider, Location sourceLocation, Location destinationLocation,
-                       VehicleType vehicleType, PricingStrategy pricingStrategy) {
+    public RideRequest(Rider rider, Location sourceLocation, Location destinationLocation, VehicleType vehicleType) {
         this.rider = rider;
         source = sourceLocation;
         destination = destinationLocation;
         this.vehicleType = vehicleType;
-        this.estimatedFare = pricingStrategy.calculateEstimatedFare(source, destination, vehicleType);
         this.status = RideRequestStatus.REQUESTED;
         this.rejectedDrivers = ConcurrentHashMap.newKeySet();
     }
 
     public BigDecimal getEstimatedFare() {
         return estimatedFare;
+    }
+
+    public void setEstimatedFare(BigDecimal estimatedFare){
+        this.estimatedFare = estimatedFare;
     }
 
     public VehicleType getVehicleType(){

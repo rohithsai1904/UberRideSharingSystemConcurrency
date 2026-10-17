@@ -3,8 +3,6 @@ package com.example.riders;
 import com.example.Ride;
 import com.example.RideRequest;
 import com.example.RideService;
-import com.example.enums.RideRequestStatus;
-import com.example.enums.RideStatus;
 import com.example.enums.RiderState;
 import com.example.object.Location;
 import com.example.vehicle.VehicleType;
@@ -53,7 +51,7 @@ public class Rider {
 
     public void cancelRide(){
         if(this.state==RiderState.DRIVER_ASSIGNED && this.currRide!=null){
-            this.currRide.cancelRide();
+            rideService.cancelRide(this, currRide);
             this.currRide = null;
             this.requestedRide = null;
             this.state = RiderState.IDLE;
@@ -84,7 +82,7 @@ public class Rider {
 
     public void endRide(){
         System.out.println(this.name+" 's Ride Ended. Ride status is " +this.currRide.getStatus());
-        System.out.println("The rides total fare is: "+this.currRide.getEstimatedFare());
+        System.out.println("The rides total fare is: "+this.currRide.getFinalFare());
         this.state = RiderState.IDLE;
         this.currRide = null;
         this.requestedRide = null;       
