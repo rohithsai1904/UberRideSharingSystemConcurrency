@@ -2,23 +2,23 @@ package com.example.strategy.drivermatching;
 
 import com.example.RideRequest;
 import com.example.drivers.Driver;
-import com.example.enums.DriverStatus;
 import com.example.object.Location;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public class NearestDriverStrategy implements DriverMatchingStrategy{
 
     @Override
-    public synchronized Driver findDriver(List<Driver> drivers,RideRequest req){
+    public Optional<Driver> findDriver(List<Driver> drivers,RideRequest req){
 
         Driver nearestDriver = null;
         int minDistance = Integer.MAX_VALUE;
         Location srcLocation = req.getSourceLocation(); 
 
         for(Driver driver: drivers){
-            if(!(req.getRejectedDriver().contains(driver)) && driver.isDriverAvailable()){
+            if(!(req.isRejectedBy(driver)) && driver.isDriverAvailable()){
 
                 Location driverLoc = driver.getLocation();
                 
@@ -30,10 +30,7 @@ public class NearestDriverStrategy implements DriverMatchingStrategy{
                 }
             }
         }
-        if(nearestDriver==null){
-            throw new RuntimeException("No Drivers found. Try after Sometime");
-        }
-        return nearestDriver;
+        return Optional.ofNullable(nearestDriver);
     }
 
 }

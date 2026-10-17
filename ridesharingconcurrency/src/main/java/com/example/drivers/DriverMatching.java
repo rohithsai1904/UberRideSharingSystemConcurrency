@@ -3,15 +3,19 @@ package com.example.drivers;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
 import com.example.RideRequest;
-import com.example.enums.RideStatus;
+import com.example.enums.RideRequestStatus;
 import com.example.strategy.drivermatching.DriverMatchingStrategy;
 
 public class DriverMatching {
     
     private DriverMatchingStrategy matchingStrategy;
-    ExecutorService pool = Executors.newFixedThreadPool(10);
+    private final ExecutorService pool = Executors.newFixedThreadPool(10);
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 
 
     public DriverMatching(DriverMatchingStrategy matchingStrategy){
@@ -22,23 +26,43 @@ public class DriverMatching {
         List<Driver> driverList = driverpool.getDriversOfType(request.getVehicleType());
         
         if(matchingStrategy!=null){
-            Driver driver =  matchingStrategy.findDriver(driverList, request);
-            if(driver!=null && driver.offerRide(request)==false){
-                processRequest(request, driverpool);
-            };
+            Optional<Driver> driver = matchingStrategy.findDriver(driverList, request);
+            if(driver!=null)
+                driver.ifPresent(d -> d.receiveOffer(request));
         }
         
         else{
             for(Driver d: driverList){
-                pool.submit(()->d.offerRide(request));
+                pool.submit(()-> dispatchOffers(d, request));
             }
-        }
-        if(request.getStatus()==RideStatus.REQUESTED){
-            System.out.println("Nobody accepted the Ride Request. Create a new One");
         }
     }
 
+    public void dispatchOffers(Driver driver, RideRequest request){
+        if (request.getStatus() != RideRequestStatus.REQUESTED) {
+            return;
+        }
+
+        boolean received = driver.receiveOffer(request);
+
+        if (!received) {
+            return;
+        }
+
+        scheduler.schedule(()->{
+            driver.markTimeoutForDriver(request);
+        }, 10, TimeUnit.SECONDS);
+
+
+    }
     public void shutdown(){
         pool.shutdown();
+        scheduler.shutdown();
+    }
+
+    public void rematch(RideRequest request, DriverPool driverpool){
+        if(matchingStrategy==null)
+            return;
+        processRequest(request, driverpool);
     }
 }

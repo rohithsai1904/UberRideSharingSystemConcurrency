@@ -5,23 +5,26 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import com.example.drivers.Driver;
 import com.example.enums.RideStatus;
+import com.example.enums.RiderState;
 import com.example.riders.Rider;
-import com.example.object.Location;;
+import com.example.object.Location;
 
 public class Ride {
     private int otp;
     private Rider rider;
     private BigDecimal estimatedFare;
-    private RideStatus status;
+    private volatile RideStatus status;
     private Driver driver;
     private Location destnLocation;
+    private Location pickUpLocation;
 
     public Ride(Driver driver, RideRequest req) {
         this.rider = req.getRider();
         this.driver = driver;
         this.estimatedFare = req.getEstimatedFare();
-        this.status = req.getStatus();
+        this.status = RideStatus.DRIVER_ASSIGNED;
         this.destnLocation = req.getDestinationLocation();
+        this.pickUpLocation = req.getSourceLocation();
     }
 
     public Rider getRider() {
@@ -40,20 +43,16 @@ public class Ride {
         return this.status;
     }
 
-    public void setStatus(RideStatus status) {
-        this.status = status;
+    public Location getPickUpLocation(){
+        return this.pickUpLocation;
     }
 
-    public int getOtp() {
-        return this.otp;
+    public Location getDestinationLocation(){
+        return this.destnLocation;
     }
 
     public void generateOtp() {
         this.otp = ThreadLocalRandom.current().nextInt(1000, 10000);
-    }
-
-    public void clearDriver() {
-        this.driver = null;
     }
 
     public boolean canEndRide(){
@@ -61,5 +60,33 @@ public class Ride {
             return true;
         }
         return false;
+    }
+
+    public synchronized void startRide(){
+        if(this.status!=RideStatus.DRIVER_ASSIGNED)
+            return;
+        this.status = RideStatus.RIDE_STARTED;
+        this.getRider().setStatus(RiderState.IN_RIDE);
+    }
+
+    public synchronized void endRide(){
+        if(this.canEndRide()==false){
+            return;
+        }
+        if(this.status!=RideStatus.RIDE_STARTED)
+            return;
+        this.status = RideStatus.COMPLETED;
+        this.rider.endRide();
+    }
+
+    public synchronized void cancelRide(){
+        if(this.status!=RideStatus.RIDE_STARTED)
+            return;
+        this.status = RideStatus.CANCELLED;
+    }
+
+    @Override 
+    public String toString(){
+        return "Driver Status is "+this.driver.toString()+"Ride Status is "+this.getStatus()+"Rider Details is "+this.rider.toString();
     }
 }

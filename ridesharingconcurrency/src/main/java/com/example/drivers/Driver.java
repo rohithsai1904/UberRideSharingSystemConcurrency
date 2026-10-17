@@ -2,43 +2,43 @@ package com.example.drivers;
 
 import com.example.Ride;
 import com.example.RideRequest;
-import com.example.enums.DriverStatus;
-import com.example.enums.RideStatus;
+import com.example.enums.*;
 import com.example.object.Location;
-import com.example.riders.Rider;
 import com.example.vehicle.Vehicle;
+import com.example.RideService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
+import java.util.HashSet;
+
 
 public class Driver {
     private int id;
     private String name;
-    private Location curLoc;
+    private volatile Location curLoc;
     private DriverStatus status;
     private Vehicle vh;
-    private RideRequest rr;
     private Ride currentRide;
-    private final List<RideRequest> offers;
-    private final ScheduledExecutorService scheduler;
+    private final Set<RideRequest> offers;
+    private RideService rideService;
 
 
-    public Driver(int id,String name,Location loc,Vehicle vh,ScheduledExecutorService scheduler){
+    public Driver(int id,String name,Location loc,Vehicle vh,RideService rideService){
         this.vh =vh;
         this.id =id;
         this.name = name;
         this.curLoc =loc;
         this.status = DriverStatus.AVAILABLE;
-        this.rr = null;
         this.currentRide = null;
-        this.offers = new ArrayList<>();
-        this.scheduler = scheduler;
+        this.offers = new HashSet<>();
+        this.rideService = rideService;
     }
 
     public synchronized DriverStatus getDriverStatus(){
         return this.status;
+    }
+
+    public void setLocation(Location loc){
+        this.curLoc = loc;
     }
 
     public Location getLocation(){
@@ -47,10 +47,6 @@ public class Driver {
 
     public Vehicle getVehicle(){
         return this.vh;
-    }
-
-    public synchronized void setStatus(DriverStatus status){
-        this.status=status;
     }
 
     public synchronized void goOffline(){
@@ -62,6 +58,8 @@ public class Driver {
     }
 
     public synchronized void goOnline(){
+        if(this.status!=DriverStatus.OFFLINE)
+            return;
         this.status = DriverStatus.AVAILABLE;
     }
 
@@ -70,18 +68,10 @@ public class Driver {
     }
 
     public synchronized void startRide(){
-
         if (this.currentRide == null) {
             return;
         }
-    
-        if (this.currentRide.getStatus() != RideStatus.DRIVER_ASSIGNED) {
-            return;
-        }
-    
-        Rider r = this.currentRide.getRider();
-        r.assignRide(currentRide);
-        this.currentRide.setStatus(RideStatus.RIDE_STARTED);
+        rideService.startRide(currentRide);
     }
 
     public synchronized void endRide() {
@@ -89,35 +79,29 @@ public class Driver {
         if (this.currentRide == null) {
             return;
         }
-    
         if (this.status != DriverStatus.BUSY) {
             return;
         }
-    
-        if (!this.currentRide.canEndRide()) {
-            return;
-        }
-    
-        this.currentRide.setStatus(RideStatus.COMPLETED);
+
+        rideService.endRide(this.currentRide);
+        collectMoney();
         this.status = DriverStatus.AVAILABLE;
-    
+        this.currentRide = null;
+    }
+
+    public void collectMoney(){
         System.out.println(
             this.currentRide.getEstimatedFare()
             + " is the Amount to be collected"
         );
-    
-        this.currentRide.getRider().endRide();
+        
     }
 
-    public synchronized void markTimeoutForDriver(RideRequest req) {
-        if (!req.timeoutDriver(this)) {
-            return;
-        }
-
-        this.offers.remove(req);
+    public void markTimeoutForDriver(RideRequest req) {
+        declineOffer(req);
     }
 
-    public synchronized boolean offerRide(RideRequest rideRequest){
+    public synchronized boolean receiveOffer(RideRequest rideRequest){
         if(this.status != DriverStatus.AVAILABLE){
             return false;
         }
@@ -127,52 +111,46 @@ public class Driver {
         }
         this.offers.add(rideRequest);
 
-        scheduler.schedule(()->{
-            markTimeoutForDriver(rideRequest);
-        }, 10, TimeUnit.SECONDS);
-
         return true;
     }
 
-    public  void rejectRide(DriverMatching driverMatching,DriverPool dp,RideRequest req){
+    public void rejectRide(RideRequest req) {
         if (req == null) {
             return;
         }
-    
-        synchronized (this) {
-            System.out.println(this.name + " rejected the ride");
-            this.offers.remove(req);
+        System.out.println(this.name + " rejected the ride");
+        declineOffer(req);
+    }
+
+    public void declineOffer(RideRequest req) {
+        if (req == null) {
+            return;
         }
-    
-        req.addRejectedDriver(this);
-    
-        driverMatching.processRequest(req, dp);
+        synchronized (this) {
+            if (!this.offers.remove(req)) {
+                return;
+            }
+        }
+        rideService.declineOffer(this, req);
     }
 
     public synchronized void acceptRide(RideRequest req){
-        if(this.status!=DriverStatus.AVAILABLE){
+        if(this.status!=DriverStatus.AVAILABLE || !this.offers.contains(req)){
             return;
         }
-        if(req.getStatus()==RideStatus.CANCELLED){
-            return;
-        }
-        if (req.getRejectedDriver().contains(this)) {
-            return;
-        }
-        if(req.reserveRide()){
-            System.out.println(this.name+" accepted the ride. Rider Name: "+ req.getRider().getName());
+        Ride ride = rideService.acceptOffer(this,req);
+        if(ride!=null){
             this.status = DriverStatus.BUSY;
-            this.rr = req;
-            this.currentRide = new Ride(this,req);
+            this.currentRide = ride;
         }
         else{
-            System.out.println("Somebody accepeted the ride");
+            System.out.print("Somebody else accepted the ride");
         }
     }
 
     public synchronized void viewOfferedRequests(){
         for(RideRequest req: this.offers){
-            if(req.getStatus()==RideStatus.REQUESTED)
+            if(req.getStatus()==RideRequestStatus.REQUESTED)
                 System.out.println(req.getRider()+" "+req.getSourceLocation()+" "+req.getDestinationLocation()+" "+req.getEstimatedFare());
         }
     }
@@ -182,5 +160,10 @@ public class Driver {
             return false;
         }
         return true;
+    }
+
+    @Override 
+    public String toString(){
+        return "Driver Name is "+this.name+".Id is "+this.id+".With current Location"+this.curLoc;
     }
 }

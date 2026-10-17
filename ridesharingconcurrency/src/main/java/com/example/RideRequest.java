@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.example.drivers.Driver;
-import com.example.enums.RideStatus;
+import com.example.enums.RideRequestStatus;
 import com.example.object.Location;
 import com.example.riders.Rider;
 import com.example.strategy.pricing.PricingStrategy;
@@ -19,7 +19,7 @@ public class RideRequest {
     private final Location destination;
     private final VehicleType vehicleType;
     private final BigDecimal estimatedFare;
-    private RideStatus status;
+    private RideRequestStatus status;
     private Set<Driver> rejectedDrivers;
 
     public RideRequest(Rider rider, Location sourceLocation, Location destinationLocation,
@@ -34,7 +34,7 @@ public class RideRequest {
         destination = destinationLocation;
         this.vehicleType = vehicleType;
         this.estimatedFare = pricingStrategy.calculateEstimatedFare(source, destination, vehicleType);
-        this.status = RideStatus.REQUESTED;
+        this.status = RideRequestStatus.REQUESTED;
         this.rejectedDrivers = ConcurrentHashMap.newKeySet();
     }
 
@@ -58,44 +58,44 @@ public class RideRequest {
         return this.rider;
     }
 
-    public synchronized RideStatus getStatus() {
+    public synchronized RideRequestStatus getStatus() {
         return this.status;
     }
 
-    public synchronized void setStatus(RideStatus status) {
+    public synchronized void setStatus(RideRequestStatus status) {
         this.status = status;
     }
 
-    public synchronized boolean setDriverForTheRide(){
-        if(this.status!=RideStatus.DRIVER_ASSIGNED){
-            this.setStatus(RideStatus.DRIVER_ASSIGNED);
-            return true;
-        }
-        return false;
-    }
-
-    public void addRejectedDriver(Driver driver){
+    public synchronized void addRejectedDriver(Driver driver){
         this.rejectedDrivers.add(driver);
     }
 
-    public Set<Driver> getRejectedDriver(){
-        return this.rejectedDrivers;
+    public boolean isRejectedBy(Driver driver){
+        return this.rejectedDrivers.contains(driver);
     }
 
-    public synchronized boolean reserveRide(){
-        if(this.status==RideStatus.REQUESTED){
-            this.setStatus(RideStatus.DRIVER_ASSIGNED);
+    public synchronized void reserveRide(){
+        if(this.status==RideRequestStatus.REQUESTED){
+            this.setStatus(RideRequestStatus.DRIVER_ASSIGNED);
+        }
+        return;
+    }
+
+    public synchronized Ride accept(Driver driver){
+        if(status!=RideRequestStatus.REQUESTED)
+            return null;
+        if(isRejectedBy(driver))
+            return null;
+        reserveRide();
+        return new Ride(driver, this);
+    }
+
+    public synchronized boolean cancel(){
+        if(status==RideRequestStatus.REQUESTED){
+            status = RideRequestStatus.CANCELLED;
             return true;
         }
         return false;
-    }
 
-    public synchronized boolean timeoutDriver(Driver driver) {
-        if (this.status != RideStatus.REQUESTED) {
-            return false;
-        }
-    
-        rejectedDrivers.add(driver);
-        return true;
     }
 }

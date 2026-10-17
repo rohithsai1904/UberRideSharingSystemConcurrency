@@ -4,8 +4,9 @@ import com.example.RideRequest;
 import com.example.drivers.Driver;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface DriverMatchingStrategy{
 
-    public Driver findDriver(List<Driver> drivers,RideRequest req);
+    public Optional<Driver> findDriver(List<Driver> drivers,RideRequest req);
 }

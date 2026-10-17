@@ -5,7 +5,7 @@ import com.example.drivers.DriverMatching;
 import com.example.drivers.DriverPool;
 import com.example.object.Location;
 import com.example.riders.Rider;
-import com.example.riders.RiderService;
+
 import com.example.strategy.drivermatching.NearestDriverStrategy;
 import com.example.vehicle.Vehicle;
 import com.example.vehicle.VehicleType;
@@ -19,7 +19,7 @@ public class Main {
 
         DriverPool dp = new DriverPool();
         DriverMatching driverMatching = new DriverMatching(new NearestDriverStrategy());
-        RiderService rs = new RiderService(dp, driverMatching);
+        RideService rs = new RideService(dp, driverMatching);
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
 
         Vehicle vh1 = new Vehicle(VehicleType.BIKE, 677676);
@@ -52,7 +52,7 @@ public class Main {
 
         RideRequest req1 = r1.createRideRequest(new Location(99, 366),VehicleType.BIKE);
         
-        d5.rejectRide(driverMatching,dp);
+        d5.rejectRide(driverMatching,dp,req1);
         d1.acceptRide(req1);
         d1.startRide();
         r1.viewStatus();
