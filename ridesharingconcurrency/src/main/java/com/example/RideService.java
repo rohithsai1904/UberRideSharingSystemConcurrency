@@ -82,8 +82,11 @@ public class RideService {
         return true;
     }
 
-    public synchronized void cancelRide(Rider rider,Ride ride){
-        ride.cancelRide();
+    public synchronized boolean cancelRide(Rider rider,Ride ride){
+        if(!ride.cancelRide()){
+            return false;
+        }
         ride.getDriver().rideCancelled();
+        return true;
     }
 }

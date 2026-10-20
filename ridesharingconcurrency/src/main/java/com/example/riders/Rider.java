@@ -38,7 +38,8 @@ public class Rider {
 
     public RideRequest createRideRequest(Location destination,VehicleType vehicleType){
         if(state!=RiderState.IDLE){
-            throw new RuntimeException("Rider is already requested a ride");
+            System.out.println("Rider is already requested a ride");
+            return null;
         }
         this.requestedRide = rideService.requestRide(this, this.curLoc, destination, vehicleType);
         this.state = RiderState.REQUESTED;
@@ -61,10 +62,11 @@ public class Rider {
         }
         if(this.state==RiderState.DRIVER_ASSIGNED && this.currRide!=null){
             System.out.println("Cancel Request after Driver Assigned");
-            rideService.cancelRide(this, currRide);
-            this.currRide = null;
-            this.requestedRide = null;
-            this.state = RiderState.IDLE;
+            if(rideService.cancelRide(this, currRide)){
+                this.currRide = null;
+                this.requestedRide = null;
+                this.state = RiderState.IDLE;
+            }
         }
         else if(this.state==RiderState.REQUESTED && this.requestedRide!=null){
             System.out.println("Cancel Request from Request Stage");

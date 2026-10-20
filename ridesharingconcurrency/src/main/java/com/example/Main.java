@@ -63,7 +63,7 @@ public class Main {
 
         RideRequest req1 = r1.createRideRequest(new Location(99, 366),VehicleType.BIKE);
         RideRequest req2 = r2.createRideRequest(new Location(919, 166),VehicleType.BIKE);
-        //RideRequest req3 = r2.createRideRequest(new Location(919, 166),VehicleType.SEDAN);
+        RideRequest req3 = r2.createRideRequest(new Location(919, 166),VehicleType.SEDAN);
 
         System.out.println(d1.toString());
         System.out.println(d2.toString());
@@ -130,6 +130,7 @@ public class Main {
         }
         // Wait until all attempts finish
         //done.await();
+        
         final Driver assignedDriver1 = assignedDriver;
         Thread thread = new Thread(() -> {
             try {
@@ -148,6 +149,6 @@ public class Main {
 
         thread.join();
         pool.shutdown();
-        rs.shutdown();
+        //rs.shutdown();
     }
 }

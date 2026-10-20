@@ -101,14 +101,15 @@ public class Ride {
         return true;
     }
 
-    public synchronized void cancelRide(){
+    public synchronized boolean cancelRide(){
         if(this.status!=RideStatus.DRIVER_ASSIGNED){
             System.out.println("Ride already Started");
-            return;
+            return false;
         }
         System.out.println("Rider wants to cancel the ride");
         this.finalFare = new BigDecimal("0.15").multiply(this.estimatedFare);
         this.status = RideStatus.CANCELLED;
+        return true;
     }
 
     @Override 

@@ -147,13 +147,13 @@ public class Driver {
             return null;
         }
         Ride ride = rideService.acceptOffer(this,req);
-        if(ride!=null){
-            System.out.println("Congrats you got the ride --- "+this.name);
-            this.status = DriverStatus.BUSY;
-            this.currentRide = ride;
-            return this;
-        }
-        return null;
+        if(ride==null)
+            return null;
+        System.out.println("Congrats you got the ride --- "+this.name);
+        this.status = DriverStatus.BUSY;
+        this.currentRide = ride;
+        return this;
+        
     }
 
     public synchronized void viewOfferedRequests(){
@@ -170,9 +170,10 @@ public class Driver {
         return true;
     }
 
-    public void rideCancelled(){
-        this.status = DriverStatus.AVAILABLE;
+    public synchronized void rideCancelled(){
         collectMoney();
+        this.currentRide = null;
+        this.status = DriverStatus.AVAILABLE;
     }
 
     @Override 
