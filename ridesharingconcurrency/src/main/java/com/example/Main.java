@@ -133,20 +133,21 @@ public class Main {
         final Driver assignedDriver1 = assignedDriver;
         Thread thread = new Thread(() -> {
             try {
-                Thread.sleep(5000);
-        
+                
                 assignedDriver1.endRide();
                 assignedDriver1.endRide();
+                Thread.sleep(1000);
                 r1.cancelRide();
         
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 Thread.currentThread().interrupt();
             }
         });
         
         thread.start();
 
+        thread.join();
         pool.shutdown();
-
+        rs.shutdown();
     }
 }

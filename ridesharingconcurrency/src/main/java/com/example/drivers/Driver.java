@@ -141,7 +141,7 @@ public class Driver {
         rideService.declineOffer(this, req);
     }
 
-    public synchronized Driver acceptRide(RideRequest req){
+    public synchronized Driver acceptRide(RideRequest req){       
         if(this.status!=DriverStatus.AVAILABLE || !this.offers.contains(req)){
             System.out.println("Either Driver is unavailable or You cannot accept this ride");
             return null;

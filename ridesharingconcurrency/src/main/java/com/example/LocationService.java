@@ -30,12 +30,10 @@ public class LocationService {
 
             if (status == RideStatus.DRIVER_ASSIGNED) {
                 Location pickup = ride.getPickUpLocation();
-                if (hasArrived(driver, pickup)) {
-                    driver.setLocation(pickup);
-                    driver.startRide();
-                    return;
-                }
-                moveTowards(driver, pickup);
+                driver.setLocation(pickup);
+                driver.startRide();
+                return;
+                //moveTowards(driver, pickup);
             } else if (status == RideStatus.RIDE_STARTED) {
                 Location destination = ride.getDestinationLocation();
                 if (hasArrived(driver, destination)) {

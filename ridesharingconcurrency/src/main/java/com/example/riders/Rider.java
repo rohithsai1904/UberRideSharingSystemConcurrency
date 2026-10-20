@@ -50,6 +50,15 @@ public class Rider {
     }
 
     public void cancelRide(){
+        if(this.state==RiderState.IDLE){
+            System.out.println("Rider is IDLE. NO trips");
+            return;
+        }
+        
+        if(this.state==RiderState.IN_RIDE){
+            System.out.println("Rider is In Ride. You cannot cancel Now");
+            return;
+        }
         if(this.state==RiderState.DRIVER_ASSIGNED && this.currRide!=null){
             System.out.println("Cancel Request after Driver Assigned");
             rideService.cancelRide(this, currRide);
