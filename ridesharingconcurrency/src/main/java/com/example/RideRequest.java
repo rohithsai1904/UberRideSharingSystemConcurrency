@@ -78,8 +78,14 @@ public class RideRequest {
     }
 
     public synchronized Ride accept(Driver driver){
-        if(status!=RideRequestStatus.REQUESTED)
+        if(status!=RideRequestStatus.REQUESTED){
+            if(status==RideRequestStatus.CANCELLED){
+                System.out.println("Ride Cancelled");
+                return null;
+            }
+            System.out.println("Sorry ,"+driver.getName()+" .Already accepted by one of the driver.");
             return null;
+        }
         if(isRejectedBy(driver))
             return null;
         reserveRide();
@@ -94,4 +100,10 @@ public class RideRequest {
         return false;
 
     }
+
+    @Override 
+    public String toString(){
+        return "Status of Ride Request is "+ this.status+" Pick up at "+this.source+" Drop at "+this.destination+" Estimated fare is "+this.getEstimatedFare();
+    }
+
 }

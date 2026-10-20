@@ -36,6 +36,7 @@ public class RideService {
 
     public void shutdown(){
         locationService.shutdown();
+        driverMatching.shutdown();
     }
 
     public RideRequest requestRide(Rider rider,Location pickup,Location dropLocation,VehicleType vehicleType){
@@ -59,12 +60,17 @@ public class RideService {
         ride.startRide();
     }
 
-    public void endRide(Ride ride){
-        ride.endRide();
+    public boolean endRide(Ride ride){
+        if(!ride.endRide()){
+            return false;
+        }
+        
         int distanceCovered = ride.getInitialLocation().getEuclideanDistance(ride.getDestinationLocation());
-        int durationInSeconds = (int)(ride.getTime()/ 1_000_000_000);
+        int durationInSeconds = (int)((System.nanoTime()-ride.getStartTime())/ 1_000_000_000);
         BigDecimal fareprice = pricingStrategy.calculateFinalFare(distanceCovered, durationInSeconds/60 ,ride.getDriver().getVehicle().getVehicleType());
-        ride.setEstimatedFare(fareprice);
+        ride.setFinalFare (fareprice);
+        return true;
+        
     }
 
     public synchronized boolean declineOffer(Driver driver, RideRequest req) {
@@ -80,5 +86,4 @@ public class RideService {
         ride.cancelRide();
         ride.getDriver().rideCancelled();
     }
-
 }

@@ -49,6 +49,10 @@ public class Driver {
         return this.curLoc;
     }
 
+    public String getName(){
+        return this.name;
+    }
+
     public Vehicle getVehicle(){
         return this.vh;
     }
@@ -75,6 +79,7 @@ public class Driver {
         if (this.currentRide == null) {
             return;
         }
+        System.out.println("Driver "+this.getName()+" Started the Ride");
         rideService.startRide(currentRide);
     }
 
@@ -84,13 +89,15 @@ public class Driver {
             return;
         }
         if (this.status != DriverStatus.BUSY) {
+            System.out.println("END RIDE ==== Driver is not in Ride. He cannot end Ride.");
             return;
         }
 
-        rideService.endRide(this.currentRide);
-        collectMoney();
-        this.status = DriverStatus.AVAILABLE;
-        this.currentRide = null;
+        if(rideService.endRide(this.currentRide)){
+            collectMoney();
+            this.status = DriverStatus.AVAILABLE;
+            this.currentRide = null;
+        }
     }
 
     public void collectMoney(){
@@ -134,24 +141,25 @@ public class Driver {
         rideService.declineOffer(this, req);
     }
 
-    public synchronized void acceptRide(RideRequest req){
+    public synchronized Driver acceptRide(RideRequest req){
         if(this.status!=DriverStatus.AVAILABLE || !this.offers.contains(req)){
-            return;
+            System.out.println("Either Driver is unavailable or You cannot accept this ride");
+            return null;
         }
         Ride ride = rideService.acceptOffer(this,req);
         if(ride!=null){
+            System.out.println("Congrats you got the ride --- "+this.name);
             this.status = DriverStatus.BUSY;
             this.currentRide = ride;
+            return this;
         }
-        else{
-            System.out.print("Somebody else accepted the ride");
-        }
+        return null;
     }
 
     public synchronized void viewOfferedRequests(){
         for(RideRequest req: this.offers){
             if(req.getStatus()==RideRequestStatus.REQUESTED)
-                System.out.println(req.getRider()+" "+req.getSourceLocation()+" "+req.getDestinationLocation()+" "+req.getEstimatedFare());
+                System.out.println("Driver Name is "+this.name+". Rider is" +req.getRider().getName()+" "+req.getSourceLocation()+" "+req.getDestinationLocation()+" "+req.getEstimatedFare());
         }
     }
 
@@ -169,6 +177,7 @@ public class Driver {
 
     @Override 
     public String toString(){
+        this.viewOfferedRequests();
         return "Driver Name is "+this.name+".Id is "+this.id+".With current Location"+this.curLoc;
     }
 }

@@ -21,7 +21,6 @@ public class Ride {
     private final Location initialLocation;
 
     private long startTime;
-    private long endTime;
 
     public Ride(Driver driver, RideRequest req) {
         this.rider = req.getRider();
@@ -38,6 +37,10 @@ public class Ride {
         return this.initialLocation;
     }
 
+    public long getStartTime(){
+        return this.startTime;
+    }
+
     public Rider getRider() {
         return this.rider;
     }
@@ -50,7 +53,7 @@ public class Ride {
         return this.finalFare;
     }
 
-    public void setEstimatedFare(BigDecimal finalFare) {
+    public void setFinalFare(BigDecimal finalFare) {
         this.finalFare = finalFare;
     }
 
@@ -84,26 +87,28 @@ public class Ride {
         this.getRider().setStatus(RiderState.IN_RIDE);
     }
 
-    public synchronized void endRide(){
-        if(this.canEndRide()==false){
-            return;
+    public synchronized boolean endRide(){
+        if(this.status!=RideStatus.RIDE_STARTED){
+            System.out.println("Ride Didnot Started Yet");
+            return false;
         }
-        if(this.status!=RideStatus.RIDE_STARTED)
-            return;
-        this.endTime = System.nanoTime();
+        if(this.canEndRide()==false){
+            System.out.println("END RIDE ==== Cannot stop as we didnt reach destination yet");
+            return false;
+        }
         this.status = RideStatus.COMPLETED;
         this.rider.endRide();
+        return true;
     }
 
     public synchronized void cancelRide(){
-        if(this.status!=RideStatus.RIDE_STARTED)
+        if(this.status!=RideStatus.DRIVER_ASSIGNED){
+            System.out.println("Ride already Started");
             return;
+        }
+        System.out.println("Rider wants to cancel the ride");
         this.finalFare = new BigDecimal("0.15").multiply(this.estimatedFare);
         this.status = RideStatus.CANCELLED;
-    }
-
-    public long getTime(){
-        return this.endTime - this.startTime;
     }
 
     @Override 

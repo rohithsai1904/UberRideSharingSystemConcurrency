@@ -13,7 +13,7 @@ import com.example.strategy.drivermatching.DriverMatchingStrategy;
 
 public class DriverMatching {
     
-    private DriverMatchingStrategy matchingStrategy;
+    private DriverMatchingStrategy matchingStrategy = null;
     private final ExecutorService pool = Executors.newFixedThreadPool(10);
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 
@@ -21,6 +21,8 @@ public class DriverMatching {
     public DriverMatching(DriverMatchingStrategy matchingStrategy){
         this.matchingStrategy = matchingStrategy;
     }
+
+    public DriverMatching(){}
     
     public void processRequest(RideRequest request, DriverPool driverpool){
         List<Driver> driverList = driverpool.getDriversOfType(request.getVehicleType());
